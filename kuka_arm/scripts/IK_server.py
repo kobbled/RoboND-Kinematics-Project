@@ -16,7 +16,7 @@ from kuka_arm.srv import *
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import Pose
 from mpmath import *
-from sympy import *
+from sympy import Matrix, cos, sin, atan2, pi, sqrt, acos
 
 # *** Homogeneous Transforms ***
 def Transform_Matrix(alpha, a, d, q):
@@ -44,8 +44,7 @@ def rot_z(q):
     R_z = Matrix([[ cos(q),  -sin(q),       0],
                   [ sin(q),   cos(q),       0],
                   [      0,        0,       1]])
-
-return R_z
+    return R_z
 
 def handle_calculate_IK(req):
     rospy.loginfo("Received %s eef-poses from the plan" % len(req.poses))
@@ -54,42 +53,40 @@ def handle_calculate_IK(req):
         return -1
     else:
 
+        ## Insert IK code here!
         # Your FK code here
         # Create symbols
-        q1, q2, q3, q4, q5, q6, q7 = symbols('q1:8')
-        d1, d2, d3, d4, d5, d6, d7 = symbols('d1:8')
-        a0, a1, a2, a3, a4, a5, a6 = symbols('a0:7')
-        alpha0, alpha1, alpha2, alpha3, alpha4, alpha5, alpha6 = symbols('alpha0:7')
+        #q1, q2, q3, q4, q5, q6, q7 = symbols('q1:8')
 
         # Create Modified DH parameters
-        DH = {alpha0:      0,  a0:        0, d1:   0.75,
-             alpha1:  -pi/2,  a1:     0.35, d2:      0, q2:  q2-pi/2,
-             alpha2:      0,  a2:     1.25, d3:      0,
-             alpha3:  -pi/2,  a3:   -0.054, d4:   1.50,
-             alpha4:   pi/2,  a4:        0, d5:      0,
-             alpha5:  -pi/2,  a5:        0, d6:      0,
-             alpha6:      0,  a6:        0, d7:  0.303, q7:           0}
+        DH = {'alpha0':      0,  'a0':        0, 'd1':   0.75,
+             'alpha1':  -pi/2,  'a1':     0.35, 'd2':      0,
+             'alpha2':      0,  'a2':     1.25, 'd3':      0,
+             'alpha3':  -pi/2,  'a3':   -0.054, 'd4':   1.50,
+             'alpha4':   pi/2,  'a4':        0, 'd5':      0,
+             'alpha5':  -pi/2,  'a5':        0, 'd6':      0,
+             'alpha6':      0,  'a6':        0, 'd7':  0.303}
 
         # base link to link 1
-        T0_1 = Transform_Matrix(alpha0, a0, d1, q1).subs(DH)
+        ##T0_1 = Transform_Matrix(alpha0, a0, d1, q1).subs(DH)
+        ##T0_1 = Matrix([[cos(q1), -sin(q1), 0, 0], [sin(q1), cos(q1), 0, 0], [0, 0, 1, 0.750000000000000], [0, 0, 0, 1]])
         # link 1 to link 2
-        T1_2 = Transform_Matrix(alpha1, a1, d2, q2).subs(DH)
+        ##T1_2 = Transform_Matrix(alpha1, a1, d2, q2).subs(DH)
+        ##T1_2 = Matrix([[sin(q2), cos(q2), 0, 0.350000000000000], [0, 0, 1, 0], [cos(q2), -sin(q2), 0, 0], [0, 0, 0, 1]])
         # link 2 to link 3
-        T2_3 = Transform_Matrix(alpha2, a2, d3, q3).subs(DH)
-        # link 3 to link 4
-        T3_4 = Transform_Matrix(alpha3, a3, d4, q4).subs(DH)
-        # link 4 to link 5
-        T4_5 = Transform_Matrix(alpha4, a4, d5, q5).subs(DH)
-        # link 5 to link 6
-        T5_6 = Transform_Matrix(alpha5, a5, d6, q6).subs(DH)
-        # link 6 to gripper
-        T6_G = Transform_Matrix(alpha6, a6, d7, q7).subs(DH)
+        ##T2_3 = Transform_Matrix(alpha2, a2, d3, q3).subs(DH)
+        ##T2_3 = Matrix([[cos(q3), -sin(q3), 0, 1.25000000000000], [sin(q3), cos(q3), 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+
 
         # Total homogeneous transform
-        # precomputed to save memory and time
-        T0_G = Matrix([[((sin(q1)*sin(q4) + sin(q2 + q3)*cos(q1)*cos(q4))*cos(q5) + sin(q5)*cos(q1)*cos(q2 + q3))*cos(q6) + (sin(q1)*cos(q4) - sin(q4)*sin(q2 + q3)*cos(q1))*sin(q6), -((sin(q1)*sin(q4) + sin(q2 + q3)*cos(q1)*cos(q4))*cos(q5) + sin(q5)*cos(q1)*cos(q2 + q3))*sin(q6) + (sin(q1)*cos(q4) - sin(q4)*sin(q2 + q3)*cos(q1))*cos(q6), -(sin(q1)*sin(q4) + sin(q2 + q3)*cos(q1)*cos(q4))*sin(q5) + cos(q1)*cos(q5)*cos(q2 + q3), -0.303*(sin(q1)*sin(q4) + sin(q2 + q3)*cos(q1)*cos(q4))*sin(q5) + (1.25*sin(q2) - 0.054*sin(q2 + q3) + 1.5*cos(q2 + q3) + 0.35)*cos(q1) + 0.303*cos(q1)*cos(q5)*cos(q2 + q3)], [((sin(q1)*sin(q2 + q3)*cos(q4) - sin(q4)*cos(q1))*cos(q5) + sin(q1)*sin(q5)*cos(q2 + q3))*cos(q6) - (sin(q1)*sin(q4)*sin(q2 + q3) + cos(q1)*cos(q4))*sin(q6), -((sin(q1)*sin(q2 + q3)*cos(q4) - sin(q4)*cos(q1))*cos(q5) + sin(q1)*sin(q5)*cos(q2 + q3))*sin(q6) - (sin(q1)*sin(q4)*sin(q2 + q3) + cos(q1)*cos(q4))*cos(q6), -(sin(q1)*sin(q2 + q3)*cos(q4) - sin(q4)*cos(q1))*sin(q5) + sin(q1)*cos(q5)*cos(q2 + q3), -0.303*(sin(q1)*sin(q2 + q3)*cos(q4) - sin(q4)*cos(q1))*sin(q5) + (1.25*sin(q2) - 0.054*sin(q2 + q3) + 1.5*cos(q2 + q3) + 0.35)*sin(q1) + 0.303*sin(q1)*cos(q5)*cos(q2 + q3)], [-(sin(q5)*sin(q2 + q3) - cos(q4)*cos(q5)*cos(q2 + q3))*cos(q6) - sin(q4)*sin(q6)*cos(q2 + q3), (sin(q5)*sin(q2 + q3) - cos(q4)*cos(q5)*cos(q2 + q3))*sin(q6) - sin(q4)*cos(q6)*cos(q2 + q3), -sin(q5)*cos(q4)*cos(q2 + q3) - sin(q2 + q3)*cos(q5), -0.303*sin(q5)*cos(q4)*cos(q2 + q3) - 0.303*sin(q2 + q3)*cos(q5) - 1.5*sin(q2 + q3) + 1.25*cos(q2) - 0.054*cos(q2 + q3) + 0.75], [0, 0, 0, 1]])
-
+        # link 0 to gripper
+        # T0_G = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_G
         ###
+
+        # define symbols of orientation of EE
+        #R, P, Y = symbols('R P Y')
+        # apply rotation matricies
+        ## Rrpy = rot_z(yaw) * rot_y(pitch) * rot_x(roll)
 
 
         # Initialize service response
@@ -110,21 +107,20 @@ def handle_calculate_IK(req):
                     req.poses[x].orientation.z, req.poses[x].orientation.w])
 
             # Your IK code here
-            # define symbols of orientation of EE
-            R, P, Y = symbols('R P Y')
-            # apply rotation matricies
-            Rrpy = rot_z(Y) * rot_y(P) * rot_x(R)
             # Compensate for rotation discrepancy between DH parameters and Gazebo
-            R_corr = Matrix([[0, 0, 1], [0, -1, 0], [1, 0, 0]])
+            # DH to URDF to rotation
+            Rrpy = rot_z(yaw) * rot_y(pitch) * rot_x(roll)
+            R_corr = rot_z(pi) * rot_y(-pi/2)
             Rrpy = Rrpy * R_corr
+
             # sub in values retrieved from request
-            Rrpy = Rrpy.subs({R: roll, P: pitch, Y: yaw})
+            #Rrpy = Rrpy.subs({R: roll, P: pitch, Y: yaw})
 
             r_EE = Matrix([[px],
                           [py],
                           [pz]])
 
-            r_WC = (r_EE - d7 * Rrpy[:, 2]).subs(DH)
+            r_WC = (r_EE - DH['d7'] * Rrpy[:, 2])
             #
             #
             # Calculate joint angles using Geometric IK method
@@ -134,14 +130,14 @@ def handle_calculate_IK(req):
             theta1 = atan2(r_WC[1], r_WC[0])
 
             # calculate scalene triangle between R2,R3, and WC (R5)
-            A = d4.subs(s)
-            C = a2.subs(s)
+            A = DH['d4']
+            C = DH['a2']
 
             # B is calculated using a right triangle drawn about WC.
             # First term projects XY WC components onto x-axis and subtracts distance from base to link_3 (a1)
-            proj_x = (sqrt(r_WC[0]**2 + r_WC[1]**2) - a1).subs(DH)
+            proj_x = (sqrt(r_WC[0]**2 + r_WC[1]**2) - DH['a1'])
             # second term takes WC[2] (z) and subtracts distance from base to link_3 d1
-            proj_z = (r_WC[2] - d1).subs(DH)
+            proj_z = (r_WC[2] - DH['d1'])
             #Use pythagorous theorem to calculate B
             B = sqrt((proj_x)**2 + (proj_z)**2)
             # angles from law of cosines
@@ -156,8 +152,11 @@ def handle_calculate_IK(req):
             theta3 = pi/2 - (angle_B + 0.036)
 
             # create transform matrix R0_3
-            R0_3 = T0_1[0:3, 0:3] * T1_2[0:3, 0:3] * T2_3[0:3, 0:3]
-            R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
+            ##R0_3 = T0_1[0:3, 0:3] * T1_2[0:3, 0:3] * T2_3[0:3, 0:3]
+            ##R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
+            R0_3 = Matrix([[sin(theta2)*cos(theta1)*cos(theta3) + sin(theta3)*cos(theta1)*cos(theta2), -sin(theta2)*sin(theta3)*cos(theta1) + cos(theta1)*cos(theta2)*cos(theta3), -sin(theta1)],
+                           [sin(theta1)*sin(theta2)*cos(theta3) + sin(theta1)*sin(theta3)*cos(theta2), -sin(theta1)*sin(theta2)*sin(theta3) + sin(theta1)*cos(theta2)*cos(theta3), cos(theta1)],
+                           [-sin(theta2)*sin(theta3) + cos(theta2)*cos(theta3), -sin(theta2)*cos(theta3) - sin(theta3)*cos(theta2), 0]])
 
             R3_6 = R0_3.inv("LU") * Rrpy
 
@@ -174,8 +173,6 @@ def handle_calculate_IK(req):
             theta4 = atan2(r33, -r13)
             theta5 = atan2(sqrt(r13*r13 + r33*r33), r23)
             theta6 = atan2(-r22, r21)
-
-            ###
 
             # Populate response for the IK request
             # In the next line replace theta1,theta2...,theta6 by your joint angle variables
