@@ -60,29 +60,29 @@ def test_code(test_case):
     x = 0
     class Position:
         def __init__(self,EE_pos):
-            self.x = EE_pos[0]
-            self.y = EE_pos[1]
-            self.z = EE_pos[2]
+            x = EE_pos[0]
+            y = EE_pos[1]
+            z = EE_pos[2]
     class Orientation:
         def __init__(self,EE_ori):
-            self.x = EE_ori[0]
-            self.y = EE_ori[1]
-            self.z = EE_ori[2]
-            self.w = EE_ori[3]
+            x = EE_ori[0]
+            y = EE_ori[1]
+            z = EE_ori[2]
+            w = EE_ori[3]
 
     position = Position(test_case[0][0])
     orientation = Orientation(test_case[0][1])
 
     class Combine:
         def __init__(self,position,orientation):
-            self.position = position
-            self.orientation = orientation
+            position = position
+            orientation = orientation
 
     comb = Combine(position,orientation)
 
     class Pose:
         def __init__(self,comb):
-            self.poses = [comb]
+            poses = [comb]
 
     req = Pose(comb)
     start_time = time()
@@ -113,7 +113,18 @@ def test_code(test_case):
     # link 2 to link 3
     ##T2_3 = Transform_Matrix(DH['alpha2'], DH['a2'], DH['d3'], q3).subs(DH)
     ##print("T2_3: ", T2_3)
-
+    # link 3 to link 4
+    T3_4 = Transform_Matrix(DH['alpha3'], DH['a3'], DH['d4'], q4).subs(DH)
+    print("T3_4: ", T3_4)
+    # link 4 to link 5
+    T4_5 = Transform_Matrix(DH['alpha4'], DH['a4'], DH['d5'], q5).subs(DH)
+    print("T4_5: ", T4_5)
+    # link 5 to link 6
+    T5_6 = Transform_Matrix(DH['alpha5'], DH['a5'], DH['d6'], q6).subs(DH)
+    print("T5_6: ", T5_6)
+    # link 5 to link 6
+    T6_G = Transform_Matrix(DH['alpha6'], DH['a6'], DH['d7'], q7).subs(DH)
+    print("T6_G: ", T6_G)
 
     # Total homogeneous transform
     # link 0 to gripper
@@ -201,6 +212,28 @@ def test_code(test_case):
     #             [sin(q3),  cos(q3), 0,    0],
     #             [      0,        0, 1,    0],
     #             [      0,        0, 0,    1]])
+    # T3_4 = Matrix([
+    #             [ cos(q4), -sin(q4), 0, -0.054],
+    #             [       0,        0, 1,    1.5],
+    #             [-sin(q4), -cos(q4), 0,      0],
+    #             [       0,        0, 0,      1]])
+    #
+    # T4_5 = Matrix([
+    #             [cos(q5), -sin(q5),  0, 0],
+    #             [      0,        0, -1, 0],
+    #             [sin(q5),  cos(q5),  0, 0],
+    #             [      0,        0,  0, 1]])
+    # T5_6 = Matrix([
+    #             [ cos(q6), -sin(q6), 0, 0],
+    #             [       0,        0, 1, 0],
+    #             [-sin(q6), -cos(q6), 0, 0],
+    #             [       0,        0, 0, 1]])
+    #
+    # T6_G =  Matrix([
+    #             [1, 0, 0,     0],
+    #             [0, 1, 0,     0],
+    #             [0, 0, 1, 0.303],
+    #             [0, 0, 0,     1]])
 
     ##R0_3 = T0_1[0:3, 0:3] * T1_2[0:3, 0:3] * T2_3[0:3, 0:3]
     ##R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})

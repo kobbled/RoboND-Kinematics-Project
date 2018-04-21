@@ -18,6 +18,10 @@
 [//]: # (Image References)
 
 [image1]: ./misc_images/2018-04-18_13-37-13.png
+[DHParam]: ./misc_images/DH_link_assignment.png
+[generalTrans]: ./misc_images/dh-transform-matrix.png
+[rotMatrix]: ./misc_images/eq3.png
+[frameEq]: ./misc_images/frame_equation.png
 [imageIKDecouple]: ./misc_images/joint_decouple.png
 [image3]: ./misc_images/misc2.png
 [image_WCProblem]: ./misc_images/WC_problem.png
@@ -39,9 +43,14 @@ You're reading it!
 ### Kinematic Analysis
 #### 1. Run the forward_kinematics demo and evaluate the kr210.urdf.xacro file to perform kinematic analysis of Kuka KR210 robot and derive its DH parameters.
 
-Here is an example of how to include an image in your writeup.
+The image below shows the kuka KR210 robot and the kinematic chain created in RViz
 
 ![alt text][image1]
+
+The DH parameters for the kuka robot are can be visualized as:
+
+![DH visualized][DHParam]
+
 
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
 
@@ -55,6 +64,67 @@ Links | alpha(i-1) | a(i-1) | d(i-1) | theta(i)
 5->6 | -pi/2  | 0      | 0    |
 6->EE| 0      | 0      | 0.303| 0
 
+Transformation matricies for each joint are as follows
+``` python
+T0_1 = Matrix([
+          [cos(q1), -sin(q1), 0,    0],
+          [sin(q1),  cos(q1), 0,    0],
+          [      0,        0, 1, 0.75],
+          [      0,        0, 0,    1]])
+
+T1_2 = Matrix([
+          [sin(q2),  cos(q2), 0, 0.35],
+          [      0,        0, 1,    0],
+          [cos(q2), -sin(q2), 0,    0],
+          [      0,        0, 0,    1]])
+
+T2_3 = Matrix([
+          [cos(q3), -sin(q3), 0, 1.25],
+          [sin(q3),  cos(q3), 0,    0],
+          [      0,        0, 1,    0],
+          [      0,        0, 0,    1]])
+
+T3_4 = Matrix([
+          [ cos(q4), -sin(q4), 0, -0.054],
+          [       0,        0, 1,    1.5],
+          [-sin(q4), -cos(q4), 0,      0],
+          [       0,        0, 0,      1]])
+
+T4_5 = Matrix([
+          [cos(q5), -sin(q5),  0, 0],
+          [      0,        0, -1, 0],
+          [sin(q5),  cos(q5),  0, 0],
+          [      0,        0,  0, 1]])
+T5_6 = Matrix([
+          [ cos(q6), -sin(q6), 0, 0],
+          [       0,        0, 1, 0],
+          [-sin(q6), -cos(q6), 0, 0],
+          [       0,        0, 0, 1]])
+
+T6_G =  Matrix([
+          [1, 0, 0,     0],
+          [0, 1, 0,     0],
+          [0, 0, 1, 0.303],
+          [0, 0, 0,     1]])
+```
+
+or generalized as:
+
+![general transform equation][generalTrans]
+
+The combined homogeneous transform matrix is:
+
+``` python
+T0_G = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_G
+```
+
+where rotational matricies can be decomposed from the transformation matrices as follows:
+
+![rotational decomposition][rotMatrix]
+
+To solve for $\theta_{4} - \theta_{6}$ the equation below can be utilized which relates the end effector position with repect to the wrist center to the base frame.
+
+![reference frame equation][frameEq]
 
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
