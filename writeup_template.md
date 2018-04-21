@@ -20,6 +20,11 @@
 [image1]: ./misc_images/2018-04-18_13-37-13.png
 [imageIKDecouple]: ./misc_images/joint_decouple.png
 [image3]: ./misc_images/misc2.png
+[image_WCProblem]: ./misc_images/WC_problem.png
+[image_grabPart]: ./misc_images/grabbing_part.png
+[image_putInBin]: ./misc_images/inBin.png
+[image_success]: ./misc_images/8_outof_10.png
+
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/972/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -87,10 +92,10 @@ Using trigonometric identities to solve for $\theta_{4}$, $\theta_{5}$, $\theta_
 
 #### 1. Fill in the `IK_server.py` file with properly commented python code for calculating Inverse Kinematics based on previously performed Kinematic Analysis. Your code must guide the robot to successfully complete 8/10 pick and place cycles. Briefly discuss the code you implemented and your results.
 
-After running the code in IK_server.py in IK_debug.py the following results were output, confirming that $\theta_{1}-\theta_{6}$ are being derived properly with minimal error.
+After running an optimized version of the code in IK_server.py in IK_debug.py the following results were output, confirming that $\theta_{1}-\theta_{6}$ are being derived properly with minimal error.
 
 ```
-Total run time to calculate joint angles from pose is 0.6390 seconds
+Total run time to calculate joint angles from pose is 0.2030 seconds
 
 Wrist error for x position is: 0.00000046
 Wrist error for y position is: 0.00000032
@@ -115,8 +120,17 @@ End effector error for z position is: 0.00009502
 Overall end effector offset is: 0.00097197 units
 ```
 
+Running IK_server.py however highlighted some issues with the IK alogrithm utilized. While the robot conformed to the path created by MoveIt, the motion was not fluid, and took a very long time to get to the final position in the path. Joints 4-6 rotated very speratically, moving move than 180 degrees in some cases from one position to the next.
 
+![wrist center problem][image_WCProblem]
 
+A new implementation calculating the wrist center differently could potentially solve this problem. The current alrogithm also does not take into account the previous joint positions, and does not back propogate the trajectory list to see if the wrist center oreintation vector aligns with the calculated path. Correcting joints 4-6 using joint history, or correcting the wrist center orientation through back propagation could help make the robot motion more fluid, and faster.
 
-And just for fun, another example image:
-![alt text][image3]
+The robot was successful in picking up and placing the cylinders in the bin most of the time.
+
+![grabbing cylinder][image_grabPart]
+![placing cylinder][image_putInBin]
+
+However, the robot did have problems with cylinders placed in the bottom right bin. The image below confirms that the robot was successful 8 out of 10 times.
+
+![pick and place success][image_success]
