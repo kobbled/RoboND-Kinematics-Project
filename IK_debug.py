@@ -1,5 +1,5 @@
 import tf
-from sympy import Matrix, cos, sin, atan2, pi, sqrt, acos, symbols
+from sympy import Matrix, cos, sin, atan2, pi, sqrt, acos, symbols, simplify
 from time import time
 
 '''
